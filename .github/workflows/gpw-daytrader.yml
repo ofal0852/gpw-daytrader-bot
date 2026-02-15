@@ -1,0 +1,27 @@
+name: GPW Day Trader Bot
+
+on:
+  schedule:
+    - cron: '*/15 8-16 * * 1-5'   # co 15 min od 9:00 do 17:00 czasu polskiego (zima)
+  workflow_dispatch:   # możesz uruchomić ręcznie
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install dependencies
+      run: |
+        pip install yfinance pandas pandas_ta requests pytz
+    
+    - name: Run GPW Day Trader Bot
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      run: python gpw_daytrader_bot.py
