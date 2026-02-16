@@ -148,9 +148,8 @@ if __name__ == "__main__":
         time.sleep(2.5)
 
     # 3. Status co pół godziny (jeśli nic się nie działo)
-    if (minute % 20 == 0) and signals_sent == 0:
-        status_msg = f"**Bot przeanalizował {len(TICKERS)} spółek – nie ma nic wartego uwagi** ({now.strftime('%H:%M')})"
-        send_discord(status_msg)
-        print(status_msg)
+   if signals_sent == 0:
+    status_msg = f"**Bot OK – przeanalizował {len(TICKERS)} spółek, zero sygnałów ({now.strftime('%H:%M')})**"
+    send_discord(status_msg)
 
     print(f"Zakończono przebieg. Sygnałów wysłanych: {signals_sent}")
