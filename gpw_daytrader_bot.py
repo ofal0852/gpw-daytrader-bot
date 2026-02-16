@@ -52,7 +52,7 @@ def get_entry_signal(ticker):
         if last['Volume'] > vol_avg * 1.5: score += 2
         if last['Close'] <= last['BBL_20_2.0'] * 1.03: score += 3
 
-        if score >= 12:
+        if score >= 10:
             pct = round((last['Close'] / df['Low'].rolling(20).min().iloc[-1] - 1) * 100, 1)
             time_str = last.name.strftime('%H:%M')
             msg = (
@@ -70,7 +70,7 @@ def get_entry_signal(ticker):
 
 def check_exit(ticker, entry_price):
     try:
-        df = yf.download(ticker, period="5d", interval="15m", progress=False)
+        df = yf.download(ticker, period="5d", interval="10m", progress=False)
         if len(df) < 30: return None
 
         df['ema9'] = ta.ema(df['Close'], length=9)
@@ -90,7 +90,7 @@ def check_exit(ticker, entry_price):
             exit_reasons.append("EMA9 przebita w dół")
         if last['MACDh_12_26_9'] < prev['MACDh_12_26_9']:
             exit_reasons.append("MACD histogram spada")
-        if current_profit >= 3.0:
+        if current_profit >= 2.0:
             exit_reasons.append(f"+{current_profit:.1f}% – cel osiągnięty")
         if minutes_to_close <= 30 and minutes_to_close > 0:
             exit_reasons.append("≤30 min do zamknięcia sesji")
