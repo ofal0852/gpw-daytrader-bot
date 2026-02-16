@@ -27,7 +27,7 @@ def send_discord(msg):
 
 def get_entry_signal(ticker):
     try:
-        df = yf.download(ticker, period="5d", interval="15m", progress=False)
+        df = yf.download(ticker, period="5d", interval="10m", progress=False)
         if len(df) < 40:
             return None, None
 
