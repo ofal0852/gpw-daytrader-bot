@@ -2,3 +2,4 @@
 Day trading bot GPW – alerty Discord
 
  
+    
