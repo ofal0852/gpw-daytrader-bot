@@ -27,7 +27,7 @@ def send_discord(msg):
 
 def get_entry_signal(ticker):
     try:
-        df = yf.download(ticker, period="5d", interval="10m", progress=False)
+        df = yf.download(ticker, period="5d", interval="15m", progress=False)
         if len(df) < 40:
             return None, None
 
@@ -70,7 +70,7 @@ def get_entry_signal(ticker):
 
 def check_exit(ticker, entry_price):
     try:
-        df = yf.download(ticker, period="5d", interval="10m", progress=False)
+        df = yf.download(ticker, period="5d", interval="15m", progress=False)
         if len(df) < 30: return None
 
         df['ema9'] = ta.ema(df['Close'], length=9)
