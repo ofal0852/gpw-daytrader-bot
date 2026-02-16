@@ -2,8 +2,10 @@ name: GPW Day Trader Bot
 
 on:
   schedule:
-    - cron: '*/10 8-16 * * 1-5'   # co 10 minut, 9:00-17:00 czasu polskiego (UTC+1)
+    - cron: '*/10 8-16 * * 1-5'
   workflow_dispatch:
+  push:                     # ← dodaj te 3 linie na test
+    branches: [ main ]
 
 jobs:
   run-bot:
