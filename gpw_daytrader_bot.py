@@ -11,7 +11,7 @@ WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK')
 
 TICKERS = [
     "CDR.WA", "PKN.WA", "PKO.WA", "PEO.WA", "KGH.WA", "LPP.WA", "XTB.WA",
-    "DNP.WA", "MBK.WA", "ACP.WA", "SPL.WA", "11B.WA", "ALE.WA", "CYF.WA",
+    "DNP.WA", "MBK.WA", "ACP.WA", "SPL.WA", "11B.WA", "ALE.WA", "CPS.WA",
     "WPL.WA", "OPL.WA"
 ]
 
