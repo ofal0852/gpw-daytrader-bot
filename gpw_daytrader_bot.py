@@ -148,7 +148,7 @@ if __name__ == "__main__":
         time.sleep(2.5)
 
     # 3. Status co pół godziny (jeśli nic się nie działo)
-    if (minute % 30 == 0) and signals_sent == 0:
+    if (minute % 20 == 0) and signals_sent == 0:
         status_msg = f"**Bot przeanalizował {len(TICKERS)} spółek – nie ma nic wartego uwagi** ({now.strftime('%H:%M')})"
         send_discord(status_msg)
         print(status_msg)
