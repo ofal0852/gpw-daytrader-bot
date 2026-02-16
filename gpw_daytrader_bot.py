@@ -11,11 +11,11 @@ WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK')
 
 TICKERS = [
     "CDR.WA", "PKN.WA", "PKO.WA", "PEO.WA", "KGH.WA", "LPP.WA", "XTB.WA",
-    "DNP.WA", "MBK.WA", "ACP.WA", "SPL.WA", "11B.WA", "ALE.WA", "CPS.WA",
+    "DNP.WA", "MBK.WA", "ACP.WA", "SPL.WA", "11B.WA", "ALE.WA",
     "WPL.WA", "OPL.WA"
 ]
 
-# Pamięć otwartych pozycji (resetuje się co dzień)
+# Pamięć otwartych pozycji (resetuje się przy każdym uruchomieniu w GitHub Actions)
 open_positions = {}
 
 def send_discord(msg):
@@ -31,9 +31,9 @@ def get_entry_signal(ticker):
         if len(df) < 40:
             return None, None
 
-        df['ema9'] = ta.ema(df['Close'], length=9)
+        df['ema9']  = ta.ema(df['Close'], length=9)
         df['ema21'] = ta.ema(df['Close'], length=21)
-        df['rsi'] = ta.rsi(df['Close'], length=14)
+        df['rsi']   = ta.rsi(df['Close'], length=14)
         macd = ta.macd(df['Close'])
         df = pd.concat([df, macd], axis=1)
         bb = ta.bbands(df['Close'], length=20, std=2)
@@ -47,10 +47,10 @@ def get_entry_signal(ticker):
         if last['Close'] > last['ema9']: score += 2
         if 45 <= last['rsi'] <= 68: score += 2
         elif last['rsi'] < 40: score += 3
-        if last['MACDh_12_26_9'] > prev['MACDh_12_26_9']: score += 3
+        if 'MACDh_12_26_9' in df.columns and last['MACDh_12_26_9'] > prev['MACDh_12_26_9']: score += 3
         vol_avg = df['Volume'].rolling(20).mean().iloc[-1]
         if last['Volume'] > vol_avg * 1.5: score += 2
-        if last['Close'] <= last['BBL_20_2.0'] * 1.03: score += 3
+        if 'BBL_20_2.0' in df.columns and last['Close'] <= last['BBL_20_2.0'] * 1.03: score += 3
 
         if score >= 10:
             pct = round((last['Close'] / df['Low'].rolling(20).min().iloc[-1] - 1) * 100, 1)
@@ -64,14 +64,16 @@ def get_entry_signal(ticker):
             )
             return msg, last['Close']
         return None, None
-    except:
+    except Exception as e:
+        print(f"Błąd przy {ticker}: {str(e)}")
         return None, None
 
 
 def check_exit(ticker, entry_price):
     try:
         df = yf.download(ticker, period="5d", interval="15m", progress=False)
-        if len(df) < 30: return None
+        if len(df) < 30:
+            return None
 
         df['ema9'] = ta.ema(df['Close'], length=9)
         macd = ta.macd(df['Close'])
@@ -88,7 +90,7 @@ def check_exit(ticker, entry_price):
 
         if last['Close'] < last['ema9'] and prev['Close'] >= prev['ema9']:
             exit_reasons.append("EMA9 przebita w dół")
-        if last['MACDh_12_26_9'] < prev['MACDh_12_26_9']:
+        if 'MACDh_12_26_9' in df.columns and last['MACDh_12_26_9'] < prev['MACDh_12_26_9']:
             exit_reasons.append("MACD histogram spada")
         if current_profit >= 2.0:
             exit_reasons.append(f"+{current_profit:.1f}% – cel osiągnięty")
@@ -106,7 +108,8 @@ def check_exit(ticker, entry_price):
             )
             return msg
         return None
-    except:
+    except Exception as e:
+        print(f"Błąd exit {ticker}: {str(e)}")
         return None
 
 
@@ -122,9 +125,9 @@ if __name__ == "__main__":
 
     print(f"Start o {now.strftime('%H:%M')} – sprawdzam tickery...")
 
-    signals_sent = 0   # licznik sygnałów w tym przebiegu
+    signals_sent = 0
 
-    # 1. Najpierw sprawdzamy wyjścia
+    # Najpierw sprawdzamy wyjścia
     to_remove = []
     for ticker, entry_price in list(open_positions.items()):
         exit_msg = check_exit(ticker, entry_price)
@@ -137,7 +140,7 @@ if __name__ == "__main__":
     for t in to_remove:
         del open_positions[t]
 
-    # 2. Potem szukamy nowych wejść
+    # Potem nowe wejścia
     for tick in TICKERS:
         entry_msg, entry_price = get_entry_signal(tick)
         if entry_msg:
@@ -147,9 +150,12 @@ if __name__ == "__main__":
             signals_sent += 1
         time.sleep(2.5)
 
-    # 3. Status co pół godziny (jeśli nic się nie działo)
-   if signals_sent == 0:
-    status_msg = f"**Bot OK – przeanalizował {len(TICKERS)} spółek, zero sygnałów ({now.strftime('%H:%M')})**"
+    # Zawsze wysyłamy potwierdzenie działania bota
+    status_msg = (
+        f"**Bot działa** – przeanalizował {len(TICKERS)} spółek, "
+        f"wysłano {signals_sent} sygnałów ({now.strftime('%H:%M')})"
+    )
     send_discord(status_msg)
+    print(status_msg)
 
     print(f"Zakończono przebieg. Sygnałów wysłanych: {signals_sent}")
